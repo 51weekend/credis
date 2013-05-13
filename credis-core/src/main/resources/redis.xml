@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd  
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd 
+           ">
+
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxActive" value="500" />
+		<property name="maxIdle" value="200" />
+		<property name="maxWait" value="1000" />
+		<property name="testOnBorrow" value="true" />
+	</bean>
+	<!-- jedis pool配置 -->
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${pubSub.jedis.server}" />
+		<constructor-arg index="2" value="${pubSub.jedis.port}" />
+	</bean>
+
+
+	<bean id="cacheProviders"
+		class="com.conversant.credis.provider.RedisProvidersFactory"
+		init-method="init" lazy-init="false">
+		<property name="profiles">
+			<map>
+				<entry key="persistenceCluster">
+					<bean class="com.conversant.credis.provider.JedisProvider">
+						<!-- servers格式为： 127.0.0.1:6380, 多个之间用逗号分隔 -->
+						<property name="servers" value="${redis.persistenceCluster}" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+</beans>  

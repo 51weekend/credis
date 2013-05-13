@@ -1,0 +1,52 @@
+#!/bin/bash
+
+check(){
+  if [ -z "$(eval echo \$$1)" ] ; then
+    eval $1='$2'
+  fi
+}
+
+safemkdir(){
+  if [ ! -d $1 ] ; then
+    mkdir -p $1
+  fi
+}
+
+check APP_NAME credis
+
+#these values can be define in projectrc
+check APP_HOME /Users/chengdong/app/$APP_NAME
+check LOG_HOME /Users/chengdong/logs/$APP_NAME
+check JAVA_HOME /System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+check JETTY_HOME /Users/chengdong/dev/jetty-6.1.26
+check JETTY_PORT 6068
+check DATA_HOME $APP_HOME/data
+check TEMP_HOME $DATA_HOME/tmp
+check JETTY_RUN $TEMP_HOME
+check PROJECT_ENV dev
+
+check JAVA_OPTIONS "-server -Xms512m -Xmx512m -XX:NewSize=128m -XX:MaxNewSize=256m -XX:PermSize=64m -XX:MaxPermSize=128m"
+
+TMP=$TEMP_HOME
+CLASSPATH=
+
+JAVA_OPTIONS="$JAVA_OPTIONS -Dproject.env=$PROJECT_ENV -Dlog.home=$LOG_HOME -Djava.library.path=$APP_HOME/native -Dproject.home=$APP_HOME -Dlogback.configurationFile=$APP_HOME/conf/logback.xml"
+
+CMD="$JETTY_HOME/bin/jetty.sh $1 $APP_HOME/conf/jetty/jetty.xml"
+
+#these values be used in jetty's jetty.sh
+export JAVA_HOME JAVA_OPTIONS JETTY_PORT JETTY_HOME TMP JETTY_RUN
+
+safemkdir $LOG_HOME
+safemkdir $TEMP_HOME
+safemkdir $JETTY_RUN
+
+if [ "$1" == "start" ]
+  then
+    $CMD 1>>$LOG_HOME/stdout.log 2>>$LOG_HOME/stderr.log
+    sleep 1
+    cat $LOG_HOME/stderr.log
+    cat $LOG_HOME/stdout.log
+  else
+    $CMD
+fi

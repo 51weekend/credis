@@ -1,0 +1,10 @@
+
+.project
+
+*.prefs
+
+credis-api/.classpath
+
+credis-api/src/main/webapp/.#webclasspath
+
+credis-core/.classpath
